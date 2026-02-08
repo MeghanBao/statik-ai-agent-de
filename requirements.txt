@@ -1,0 +1,23 @@
+# Statik AI Agent - Requirements
+streamlit>=1.28.0
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+
+# LLM Integration
+openai>=1.0.0
+python-dotenv>=1.0.0
+langchain-openai>=0.0.5
+langchain-community>=0.0.10
+
+# RAG & Vector Database
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+tiktoken>=0.5.0
+
+# Utilities
+pydantic>=2.0.0
+
+# Development
+pytest>=7.4.0
+black>=23.0.0

@@ -103,12 +103,3 @@ Die Nutzung dieser Software erfolgt auf eigene Gefahr.
 ## 📄 Lizenz
 
 MIT License - siehe [LICENSE](LICENSE) Datei
-
-## 👩‍💻 Autor
-
-**Meghan Bao**
-- GitHub: [@MeghanBao](https://github.com/MeghanBao)
-
----
-
-Entwickelt mit ❤️ und 🧸 von Dudubot

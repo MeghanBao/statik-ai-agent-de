@@ -86,11 +86,15 @@ statik-ai-agent-de/
 
 ## 🗺️ Roadmap
 
+### ✅ Abgeschlossen (Today!)
+- [x] PDF-Export für Kurzberichte
+- [x] Dynamische Diagramme (Streamlit Tabs)
+- [x] Mehr Trägertypen (Durchlaufträger, Kragträger)
+
+### ⏳ Kommend
 - [ ] Echte LLM-Anbindung (OpenAI GPT-4)
 - [ ] Vektordatenbank mit umfangreichen Normen-Bibliotheken
-- [ ] Dynamische Darstellung von Momentenlinien
-- [ ] PDF-Export für Kurzberichte
-- [ ] Weitere Trägertypen (Durchlaufträger, Kragträger)
+- [ ] Weitere Trägertypen (Rahmen, Platten)
 
 ## ⚖️ Haftungsausschluss
 

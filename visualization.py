@@ -1,11 +1,13 @@
 """
 statik-ai-agent-de
-Visualisierungsmodul für Diagramme
+Visualisierungsmodul für Diagramme - Erweitert
+Unterstützt: Einfeldträger, Kragträger, Durchlaufträger
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch
+from matplotlib.patches import FancyBboxPatch, Rectangle
+from typing import List, Optional
 
 # Matplotlib Stil setzen
 plt.style.use('seaborn-v0_8-whitegrid')
@@ -13,128 +15,167 @@ plt.style.use('seaborn-v0_8-whitegrid')
 
 def plot_bending_moment(L: float, w: float, n_points: int = 100):
     """
-    Erstellt Diagramm des Biegemomentenverlaufs.
-    
-    Args:
-        L: Trägerlänge in m
-        w: Streckenlast in kN/m
-        n_points: Anzahl der Punkte für die Kurve
-        
-    Returns:
-        matplotlib Figure
+    Erstellt Diagramm des Biegemomentenverlaufs (Einfeldträger).
     """
-    # Positionen entlang des Trägers
     x = np.linspace(0, L, n_points)
-    
-    # Biegemoment für Einfeldträger mit Gleichstreckenlast
-    # M(x) = (w * L / 2) * x - (w * x^2 / 2)
-    # = w * x * (L - x) / 2
     M = (w * x * (L - x)) / 2
     
-    # Maximalwerte
     M_max = (w * L**2) / 8
     x_max = L / 2
     
-    # Plot erstellen
     fig, ax = plt.subplots(figsize=(10, 5), dpi=100)
-    
-    # Biegemomentenlinie
     ax.plot(x, M, 'b-', linewidth=2.5, label='Biegemoment M(x)')
-    
-    # Maximales Moment markieren
     ax.plot(x_max, M_max, 'ro', markersize=10, label=f'M_max = {M_max:.2f} kNm')
-    
-    # Füllen des Diagramms
     ax.fill_between(x, 0, M, alpha=0.3, color='blue')
     
-    # Achsen und Beschriftung
     ax.set_xlabel('Position x [m]', fontsize=11)
     ax.set_ylabel('Biegemoment M [kNm]', fontsize=11)
-    ax.set_title('Biegemomentenverlauf - Einfeldträger mit Gleichstreckenlast', fontsize=13, fontweight='bold')
-    ax.legend(loc='upper right', fontsize=10)
-    ax.grid(True, alpha=0.3)
-    
-    # Null-Linie
+    ax.set_title('Biegemomentenverlauf - Einfeldträger', fontsize=13, fontweight='bold')
+    ax.legend(loc='upper right')
     ax.axhline(y=0, color='k', linewidth=0.8)
-    
-    # Achsenlimits
     ax.set_xlim(0, L)
     ax.set_ylim(0, M_max * 1.15)
-    
-    # Werte an den Auflagern und Mitte
-    ax.text(0.02, 0.5, f'M = 0', fontsize=9, verticalalignment='bottom')
-    ax.text(x_max, M_max + 0.05 * M_max, f'M_max\n{M_max:.2f} kNm', 
-            fontsize=9, ha='center', fontweight='bold', color='red')
-    ax.text(L - 0.1, 0.5, f'M = 0', fontsize=9, ha='right', verticalalignment='bottom')
     
     plt.tight_layout()
     return fig
 
 
-def plot_deflection(L: float, w: float, E: float, I: float, n_points: int = 100):
+def plot_bending_moment_krag(L: float, w: float, n_points: int = 100):
     """
-    Erstellt Diagramm der Biegelinie (Durchbiegung).
-    
-    Args:
-        L: Trägerlänge in m
-        w: Streckenlast in kN/m
-        E: E-Modul in MPa (N/mm²)
-        I: Trägheitsmoment in m⁴
-        n_points: Anzahl der Punkte für die Kurve
-        
-    Returns:
-        matplotlib Figure
+    Erstellt Biegemomentenverlauf für Kragträger.
     """
-    # Positionen entlang des Trägers
     x = np.linspace(0, L, n_points)
+    # M(x) = -w * x² / 2 (negativ am Einspannpunkt)
+    M = -w * x**2 / 2
     
-    # Durchbiegung für Einfeldträger
-    # δ(x) = (w * x / (24 * E * I)) * (L³ - 2*L*x² + x³)
-    # Umrechnung E in kN/m²
-    E_knm2 = E * 1000
+    M_max = w * L**2 / 2  # Am Einspannpunkt (x=0)
     
-    delta = (w * x / (24 * E_knm2 * I)) * (L**3 - 2*L*x**2 + x**3)
-    
-    # Maximale Durchbiegung (in Feldmitte)
-    delta_max = (5 * w * L**4) / (384 * E_knm2 * I)
-    x_max = L / 2
-    
-    # Verhältnis für Darstellung
-    # Die Durchbiegung ist sehr klein im Vergleich zur Länge
-    # Wir zeigen sie vergrößert an (übertrieben)
-    exaggeration = 100  # 100x übertrieben für Sichtbarkeit
-    
-    # Plot erstellen
     fig, ax = plt.subplots(figsize=(10, 5), dpi=100)
     
-    # Biegelinie (vergrößert dargestellt)
-    ax.plot(x, delta * exaggeration * 1000, 'g-', linewidth=2.5, label=f'Biegelinie (100× übertrieben)')
+    # Momentenlinie (negative Werte nach oben darstellen)
+    ax.plot(x, -M, 'r-', linewidth=2.5, label='|M(x)|')
+    ax.fill_between(x, 0, -M, alpha=0.3, color='red')
     
-    # Ursprüngliche Trägerlinie
-    ax.axhline(y=0, color='k', linewidth=1.5, linestyle='--', label='Ursprüngliche Lage')
+    # Einspannung markieren
+    ax.axvline(x=0, color='black', linewidth=3, label='Einspannung')
+    ax.plot(0, M_max, 'ro', markersize=10, label=f'|M_max| = {M_max:.2f} kNm')
     
-    # Maximale Durchbiegung markieren
-    ax.plot(x_max, delta_max * exaggeration * 1000, 'ro', markersize=10, 
-            label=f'δ_max = {delta_max*1000:.2f} mm (tatsächlich)')
+    ax.set_xlabel('Position x [m] (vom freien Ende)', fontsize=11)
+    ax.set_ylabel('Biegemoment |M| [kNm]', fontsize=11)
+    ax.set_title('Biegemomentenverlauf - Kragträger', fontsize=13, fontweight='bold')
+    ax.legend(loc='upper right')
+    ax.set_xlim(0, L)
+    ax.set_ylim(0, M_max * 1.15)
     
-    # Füllen des Diagramms
-    ax.fill_between(x, 0, delta * exaggeration * 1000, alpha=0.3, color='green')
+    plt.tight_layout()
+    return fig
+
+
+def plot_bending_moment_durchlauf(felder: List[float], w: float, n_points: int = 50):
+    """
+    Erstellt Biegemomentenverlauf für Durchlaufträger (2 oder 3 Felder).
+    """
+    x_total = np.array([])
+    M_total = np.array([])
     
-    # Achsen und Beschriftung
+    x_pos = 0
+    max_moments = []
+    
+    for i, L in enumerate(felder):
+        x = np.linspace(0, L, n_points)
+        
+        if i == 0:
+            # Erstes Feld: M+ in Feldmitte, negatives Moment am Auflager
+            x_local = x - L/2
+            M = w * (L**2/8 - x_local**2/2)
+        elif i == len(felder) - 1:
+            # Letztes Feld
+            x_local = x - L/2
+            M = w * (L**2/8 - x_local**2/2)
+        else:
+            # Mittlere Felder
+            x_local = x - L/2
+            M = w * (L**2/10 - x_local**2/2)
+        
+        x_total = np.append(x_total, x + x_pos)
+        M_total = np.append(M_total, M)
+        
+        max_moments.append((x_pos + L/2, np.max(M)))
+        x_pos += L
+    
+    M_max = max(max_moments, key=lambda x: x[1])
+    
+    fig, ax = plt.subplots(figsize=(12, 5), dpi=100)
+    
+    # Positive und negative Momente unterschiedlich färben
+    ax.plot(x_total, M_total, 'b-', linewidth=2.5, label='Biegemoment M(x)')
+    
+    # Nulllinie
+    ax.axhline(y=0, color='k', linewidth=0.8)
+    
+    # Auflager markieren
+    x_auflager = np.cumsum([0] + felder[:-1])
+    for x_a in x_auflager:
+        ax.axvline(x=x_a, color='gray', linestyle='--', alpha=0.5)
+    
+    # Max. Moment markieren
+    ax.plot(M_max[0], M_max[1], 'ro', markersize=10, label=f'M_max = {M_max[1]:.2f} kNm')
+    
+    ax.fill_between(x_total, 0, M_total, where=(M_total >= 0), alpha=0.3, color='blue', label='Positive Momente')
+    ax.fill_between(x_total, 0, M_total, where=(M_total < 0), alpha=0.3, color='red', label='Negative Momente')
+    
     ax.set_xlabel('Position x [m]', fontsize=11)
-    ax.set_ylabel(f'Durchbiegung δ [mm] ({exaggeration}× übertrieben)', fontsize=11)
-    ax.set_title('Biegelinie - Einfeldträger (Maßstab übertrieben für Darstellung)', fontsize=13, fontweight='bold')
-    ax.legend(loc='upper right', fontsize=10)
+    ax.set_ylabel('Biegemoment M [kNm]', fontsize=11)
+    ax.set_title(f'Biegemomentenverlauf - Durchlaufträger ({len(felder)} Felder)', fontsize=13, fontweight='bold')
+    ax.legend(loc='upper right', fontsize=8)
     ax.grid(True, alpha=0.3)
     
-    # Achsenlimits
-    ax.set_xlim(0, L)
-    ax.set_ylim(-0.5, delta_max * exaggeration * 1000 * 1.2)
+    plt.tight_layout()
+    return fig
+
+
+def plot_deflection(L: float, w: float, E: float, I: float, traeger_typ: str = 'einfeld', felder: Optional[List[float]] = None, exaggeration: float = 100):
+    """
+    Erstellt Biegelinie mit optionaler Anpassung für verschiedene Trägertypen.
+    """
+    E_knm2 = E * 1000
     
-    # Info-Box
-    info_text = f'Tatsächliche max. Durchbiegung: {delta_max*1000:.2f} mm\n'
-    info_text += f'Verhältnis δ/L = 1/{L/(delta_max*1000):.0f}'
+    if traeger_typ == 'einfeld':
+        x = np.linspace(0, L, 100)
+        delta = (w * x / (24 * E_knm2 * I)) * (L**3 - 2*L*x**2 + x**3) * 1000
+        delta_max = 5 * w * L**4 / (384 * E_knm2 * I) * 1000
+        x_max = L / 2
+        
+    elif traeger_typ == 'krag':
+        x = np.linspace(0, L, 100)
+        delta = w * x**4 / (8 * E_knm2 * I) * 1000
+        delta_max = w * L**4 / (8 * E_knm2 * I) * 1000
+        x_max = L
+        
+    elif traeger_typ == 'durchlauf' and felder:
+        x = np.linspace(0, felder[0], 50)
+        delta = (w * x / (24 * E_knm2 * I)) * (felder[0]**3 - 2*felder[0]*x**2 + x**3) * 1000
+        delta_max = delta.max()
+        x_max = x[np.argmax(delta)]
+        L = sum(felder)
+    else:
+        # Fallback
+        return plot_deflection(L, w, E, I, 'einfeld', None, exaggeration)
     
+    fig, ax = plt.subplots(figsize=(10, 5), dpi=100)
+    
+    ax.plot(x, delta * exaggeration, 'g-', linewidth=2.5, label=f'Biegelinie ({exaggeration}× übertrieben)')
+    ax.axhline(y=0, color='k', linewidth=1.5, linestyle='--', label='Ursprüngliche Lage')
+    ax.plot(x_max, delta_max * exaggeration, 'ro', markersize=10, label=f'δ_max = {delta_max:.2f} mm')
+    ax.fill_between(x, 0, delta * exaggeration, alpha=0.3, color='green')
+    
+    ax.set_xlabel('Position x [m]', fontsize=11)
+    ax.set_ylabel(f'Durchbiegung δ [mm] ({exaggeration}× übertrieben)', fontsize=11)
+    ax.set_title(f'Biegelinie - {traeger_typ.capitalize()}träger', fontsize=13, fontweight='bold')
+    ax.legend(loc='upper right')
+    ax.grid(True, alpha=0.3)
+    
+    info_text = f'Tatsächliche max. Durchbiegung: {delta_max:.2f} mm'
     ax.text(0.02, 0.98, info_text, transform=ax.transAxes, fontsize=9,
             verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     
@@ -144,18 +185,8 @@ def plot_deflection(L: float, w: float, E: float, I: float, n_points: int = 100)
 
 def plot_comparison_chart(L: float, w: float, E: float, I: float):
     """
-    Erstellt einen Vergleichs-Chart mit verschiedenen Profilen.
-    
-    Args:
-        L: Trägerlänge in m
-        w: Streckenlast in kN/m
-        E: E-Modul in MPa
-        I: Aktuelles Trägheitsmoment
-        
-    Returns:
-        matplotlib Figure
+    Erstellt Vergleichs-Chart mit verschiedenen Profilen.
     """
-    # Verschiedene Profile vergleichen
     from calculation import get_ipe_traegheitsmoment
     
     profile = ['IPE 180', 'IPE 200', 'IPE 220', 'IPE 240', 'IPE 270', 'IPE 300']
@@ -165,134 +196,48 @@ def plot_comparison_chart(L: float, w: float, E: float, I: float):
     
     for profil in profile:
         I_profil = get_ipe_traegheitsmoment(profil)
-        delta = (5 * w * L**4) / (384 * E_knm2 * I_profil) * 1000  # in mm
+        delta = 5 * w * L**4 / (384 * E_knm2 * I_profil) * 1000
         durchbiegungen.append(delta)
     
-    # Grenzwert L/300
-    grenzwert = (L * 1000) / 300
+    grenzwert = L * 1000 / 300
     
-    # Plot
     fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
-    
-    # Balkendiagramm
     bars = ax.bar(profile, durchbiegungen, color='steelblue', edgecolor='black', alpha=0.8)
-    
-    # Grenzwert-Linie
     ax.axhline(y=grenzwert, color='red', linestyle='--', linewidth=2, label=f'Grenzwert L/300 = {grenzwert:.1f} mm')
     
-    # Aktuelles Profil hervorheben
-    aktuelles_I = I
     for i, profil in enumerate(profile):
-        if abs(get_ipe_traegheitsmoment(profil) - aktuelles_I) < 1e-8:
+        if abs(get_ipe_traegheitsmoment(profil) - I) < 1e-8:
             bars[i].set_color('orange')
-            bars[i].set_label('Aktuelles Profil')
     
-    # Beschriftung
     ax.set_xlabel('Profil', fontsize=11)
     ax.set_ylabel('Max. Durchbiegung [mm]', fontsize=11)
     ax.set_title('Durchbiegungsvergleich verschiedener IPE-Profile', fontsize=13, fontweight='bold')
-    ax.legend(loc='upper right', fontsize=10)
+    ax.legend(loc='upper right')
     ax.grid(True, alpha=0.3, axis='y')
     
-    # Werte über Balken
-    for i, (profil, delta) in enumerate(zip(profile, durchbiegungen)):
+    for i, delta in enumerate(durchbiegungen):
         ax.text(i, delta + 0.5, f'{delta:.1f} mm', ha='center', fontsize=9)
     
     plt.tight_layout()
     return fig
 
 
-def create_summary_diagram(result):
-    """
-    Erstellt ein zusammenfassendes Diagramm mit allen Ergebnissen.
-    
-    Args:
-        result: TraegerBerechnung Objekt
-        
-    Returns:
-        matplotlib Figure
-    """
-    fig = plt.figure(figsize=(12, 8), dpi=100)
-    gs = fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
-    
-    # Systemskizze
-    ax1 = fig.add_subplot(gs[0, :])
-    ax1.set_xlim(0, 10)
-    ax1.set_ylim(0, 3)
-    ax1.axis('off')
-    ax1.set_title('Systemübersicht', fontsize=14, fontweight='bold')
-    
-    # Träger
-    ax1.plot([1, 9], [1.5, 1.5], 'k-', linewidth=4)
-    # Auflager
-    ax1.plot([1, 1], [1.5, 1.2], 'k-', linewidth=3)
-    ax1.plot([0.8, 1.2], [1.2, 1.2], 'k-', linewidth=3)
-    ax1.plot([9, 9], [1.5, 1.2], 'k-', linewidth=3)
-    ax1.plot([8.8, 9.2], [1.2, 1.2], 'k-', linewidth=3)
-    # Last
-    for i in range(2, 9):
-        ax1.arrow(i, 2.5, 0, -0.5, head_width=0.2, head_length=0.1, fc='red', ec='red')
-    ax1.text(5, 2.7, f'q = {result.streckenlast:.1f} kN/m', ha='center', fontsize=11, color='red')
-    ax1.text(5, 0.8, f'L = {result.laenge:.1f} m', ha='center', fontsize=11)
-    
-    # Ergebnis-Boxen
-    box_props = dict(boxstyle='round,pad=0.5', facecolor='lightblue', alpha=0.8)
-    ax1.text(2.5, 2.2, f'M_max = {result.biegemoment_max:.2f} kNm', fontsize=10, bbox=box_props)
-    ax1.text(7.5, 2.2, f'δ_max = {result.durchbiegung_max:.2f} mm', fontsize=10, bbox=box_props)
-    
-    # Biegemomentenverlauf (klein)
-    ax2 = fig.add_subplot(gs[1, 0])
-    x = np.linspace(0, result.laenge, 50)
-    M = (result.streckenlast * x * (result.laenge - x)) / 2
-    ax2.plot(x, M, 'b-', linewidth=2)
-    ax2.fill_between(x, 0, M, alpha=0.3, color='blue')
-    ax2.set_title('Biegemoment', fontsize=11)
-    ax2.set_xlabel('x [m]')
-    ax2.set_ylabel('M [kNm]')
-    ax2.grid(True, alpha=0.3)
-    
-    # Biegelinie (klein)
-    ax3 = fig.add_subplot(gs[1, 1])
-    E_knm2 = result.emodul * 1000
-    delta = (result.streckenlast * x / (24 * E_knm2 * result.traegheitsmoment)) * \
-            (result.laenge**3 - 2*result.laenge*x**2 + x**3) * 1000  # mm
-    ax3.plot(x, delta, 'g-', linewidth=2)
-    ax3.fill_between(x, 0, delta, alpha=0.3, color='green')
-    ax3.set_title('Durchbiegung', fontsize=11)
-    ax3.set_xlabel('x [m]')
-    ax3.set_ylabel('δ [mm]')
-    ax3.grid(True, alpha=0.3)
-    
-    plt.suptitle('Zusammenfassung der Berechnung', fontsize=16, fontweight='bold', y=0.98)
-    
-    return fig
-
-
 if __name__ == "__main__":
-    # Test
-    print("🎨 Visualisierungsmodul Test")
+    print("🎨 Visualisierungsmodul Test - Erweitert")
     print("=" * 50)
     
-    from calculation import berechne_einfeldtraeger
+    from calculation import berechne_einfeldtraeger, berechne_kragtraeger, berechne_durchlaufträger
     
-    result = berechne_einfeldtraeger(
-        laenge=6.0,
-        streckenlast=5.0,
-        emodul=210000,
-        traegheitsmoment=1940e-8
-    )
+    print("\n1. Einfeldträger...")
+    fig1 = plot_bending_moment(6.0, 5.0)
     
-    print("\n1. Biegemomentenverlauf...")
-    fig1 = plot_bending_moment(result.laenge, result.streckenlast)
+    print("\n2. Kragträger...")
+    fig2 = plot_bending_moment_krag(3.0, 5.0)
     
-    print("2. Biegelinie...")
-    fig2 = plot_deflection(result.laenge, result.streckenlast, result.emodul, result.traegheitsmoment)
+    print("\n3. Durchlaufträger (2 Felder)...")
+    fig3 = plot_bending_moment_durchlauf([4.0, 5.0], 5.0)
     
-    print("3. Profilvergleich...")
-    fig3 = plot_comparison_chart(result.laenge, result.streckenlast, result.emodul, result.traegheitsmoment)
+    print("\n4. Biegelinie (Einfeldträger)...")
+    fig4 = plot_deflection(6.0, 5.0, 210000, 1940e-8)
     
-    print("4. Zusammenfassung...")
-    fig4 = create_summary_diagram(result)
-    
-    plt.show()
     print("\n✅ Alle Diagramme erstellt!")

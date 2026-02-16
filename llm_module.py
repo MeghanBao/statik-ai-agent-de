@@ -3,7 +3,10 @@ statik-ai-agent-de
 LLM-Modul für KI-gestützte Erklärungen
 """
 
-from typing import Optional, Dict
+from typing import Optional
+import os
+
+from openai import OpenAI
 from calculation import TraegerBerechnung
 
 
@@ -18,6 +21,12 @@ class StatikLLM:
     def __init__(self):
         """Initialisiert das LLM-Modul."""
         self.context = ""
+        self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.client = None
+
+        api_key = os.getenv("OPENAI_API_KEY")
+        if api_key:
+            self.client = OpenAI(api_key=api_key)
     
     def set_rag_context(self, context: str):
         """
@@ -39,7 +48,10 @@ class StatikLLM:
         Returns:
             Deutschsprachige Erklärung
         """
-        # Template-basierte Erklärung (kann später durch echtes LLM ersetzt werden)
+        # OpenAI-basierte Erklärung (mit Fallback auf lokales Template)
+        llm_response = self._generate_with_openai(result, frage)
+        if llm_response:
+            return llm_response
         
         parts = []
         
@@ -57,6 +69,48 @@ class StatikLLM:
             parts.append(self._answer_specific_question(result, frage))
         
         return "\n\n".join(parts)
+
+    def _generate_with_openai(self, result: TraegerBerechnung, frage: Optional[str]) -> Optional[str]:
+        """Erzeugt eine Antwort via OpenAI, falls API-Key verfügbar ist."""
+        if not self.client:
+            return None
+
+        user_question = frage or "Bewerte die Ergebnisse und erkläre die Gebrauchstauglichkeit verständlich auf Deutsch."
+        context_block = self.context if self.context else "Kein zusätzlicher Normenkontext verfügbar."
+
+        prompt = f"""
+Du bist ein erfahrener Tragwerksplaner-Assistent für Deutschland.
+Antworte präzise auf Deutsch und gib eine vorsichtige, normorientierte Einordnung.
+Weise darauf hin, dass das Ergebnis nur eine Orientierung ist.
+
+Berechnungsergebnisse:
+- Trägertyp: {result.traeger_typ}
+- Länge: {result.laenge:.2f} m
+- Streckenlast: {result.streckenlast:.2f} kN/m
+- E-Modul: {result.emodul:.0f} MPa
+- Trägheitsmoment I: {result.traegheitsmoment:.4e} m⁴
+- Max. Biegemoment: {result.biegemoment_max:.2f} kNm
+- Max. Querkraft: {result.querkraft_max:.2f} kN
+- Max. Durchbiegung: {result.durchbiegung_max:.2f} mm
+- Grenzdurchbiegung L/300: {result.grenzdurchbiegung_l300:.2f} mm
+- Ausnutzung: {result.ausnutzung_l300:.1f} %
+
+Normenkontext:
+{context_block}
+
+Frage:
+{user_question}
+""".strip()
+
+        try:
+            response = self.client.responses.create(
+                model=self.model,
+                input=prompt,
+                temperature=0.2,
+            )
+            return response.output_text.strip()
+        except Exception:
+            return None
     
     def _generate_intro(self, result: TraegerBerechnung) -> str:
         """Generiert die Einleitung."""

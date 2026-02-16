@@ -12,7 +12,6 @@ from calculation import (
     get_material_e_modul,
     get_ipe_traegheitsmoment,
     format_ergebnis,
-    get_traeger_typen,
 )
 from visualization import (
     plot_bending_moment,
@@ -22,6 +21,7 @@ from visualization import (
     plot_comparison_chart,
 )
 from pdf_export import PDFReport
+from llm_module import StatikLLM
 
 # Page config
 st.set_page_config(
@@ -44,6 +44,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
+    if "last_result" not in st.session_state:
+        st.session_state.last_result = None
+
     st.markdown('<p class="main-header">🏗️ Statik AI Agent - Deutschland</p>', unsafe_allow_html=True)
     st.markdown("KI-gestützte statische Berechnungen für Ingenieure")
     
@@ -65,14 +68,6 @@ def main():
             options=['Einfeldträger', 'Kragträger', 'Durchlaufträger (2 Felder)', 'Durchlaufträger (3 Felder)'],
             index=0
         )
-        
-        # Mapping zu internem Typ
-        typ_mapping = {
-            'Einfeldträger': 'einfeld',
-            'Kragträger': 'krag',
-            'Durchlaufträger (2 Felder)': 'durchlauf_2',
-            'Durchlaufträger (3 Felder)': 'durchlauf_3',
-        }
         
         st.header("📐 Eingabeparameter")
         
@@ -134,6 +129,8 @@ def main():
                     result = berechne_kragtraeger(laenge, streckenlast, emodul, traegheitsmoment)
                 else:
                     result = berechne_einfeldtraeger(laenge, streckenlast, emodul, traegheitsmoment)
+
+                st.session_state.last_result = result
                 
                 # PDF generieren
                 pdf = PDFReport()
@@ -172,6 +169,8 @@ def main():
                     result = berechne_kragtraeger(laenge, streckenlast, emodul, traegheitsmoment)
                 else:
                     result = berechne_einfeldtraeger(laenge, streckenlast, emodul, traegheitsmoment)
+
+                st.session_state.last_result = result
                 
                 # Ergebnisse anzeigen
                 st.markdown('<div class="result-box">', unsafe_allow_html=True)
@@ -261,15 +260,37 @@ def main():
                     else:
                         st.info("Profilvergleich nur für Einfeldträger verfügbar.")
                 
-                # Detaillierte Ausgabe
-                with st.expander("📋 Detaillierte Berechnung"):
-                    st.text(format_ergebnis(result))
                 
             except Exception as e:
                 st.error(f"Berechnungsfehler: {e}")
-        
-        else:
+
+        if st.session_state.last_result is None:
             st.info("👈 Bitte geben Sie die Parameter in der Seitenleiste ein und starten Sie die Berechnung.")
+        else:
+            result = st.session_state.last_result
+
+            # Detaillierte Ausgabe
+            with st.expander("📋 Detaillierte Berechnung"):
+                st.text(format_ergebnis(result))
+
+            # KI-Assistent
+            st.divider()
+            st.subheader("🧠 KI-Assistent (optional mit OpenAI)")
+            frage = st.text_area(
+                "Spezifische Frage zur Berechnung (optional)",
+                value="Ist diese Durchbiegung für einen Deckenbalken im Wohnungsbau akzeptabel?",
+                height=100,
+            )
+
+            if st.button("🤖 KI-Erklärung erzeugen", use_container_width=True):
+                llm = StatikLLM()
+                erklaerung = llm.generate_explanation(result, frage=frage.strip() if frage.strip() else None)
+                st.markdown(erklaerung)
+
+                if llm.client is None:
+                    st.info("Kein OPENAI_API_KEY gefunden: Es wird die lokale Template-Erklärung verwendet.")
+                else:
+                    st.success(f"OpenAI-Modell aktiv: {llm.model}")
     
     with col2:
         st.header("📚 Informationen")

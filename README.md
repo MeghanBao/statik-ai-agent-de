@@ -23,6 +23,8 @@ Ein intelligenter KI-Agent für den Statikbereich in Deutschland. Dieses Tool ko
 ### 🤖 KI-Interpretationen
 - Deutschsprachige Erklärungen der statischen Zusammenhänge
 - Bewertung der Ergebnisse im Hinblick auf Gebrauchstauglichkeitsgrenzwerte (z.B. L/300)
+- Neuer **KI-Assistent** mit freier Folgefrage direkt in der Ergebnisansicht
+- Optional mit **OpenAI** (`OPENAI_API_KEY`) oder lokalem Template-Fallback
 
 ## 🛠️ Technologie-Stack
 
@@ -59,6 +61,19 @@ streamlit run app.py
 
 Die App ist unter `http://localhost:8501` erreichbar.
 
+### Optional: OpenAI aktivieren
+
+Wenn du den KI-Assistenten mit OpenAI nutzen willst, setze einen API-Key:
+
+```bash
+export OPENAI_API_KEY="dein_api_key"
+# optional: Modell überschreiben (Default: gpt-4o-mini)
+export OPENAI_MODEL="gpt-4o-mini"
+streamlit run app.py
+```
+
+Ohne API-Key nutzt die App automatisch eine lokale, template-basierte Erklärung.
+
 ## 📋 Beispiel
 
 **Eingabewerte:**
@@ -90,6 +105,7 @@ statik-ai-agent-de/
 - [x] PDF-Export für Kurzberichte
 - [x] Dynamische Diagramme (Streamlit Tabs)
 - [x] Mehr Trägertypen (Durchlaufträger, Kragträger)
+- [x] KI-Assistent mit optionaler OpenAI-Anbindung und Fallback
 
 ### ⏳ Kommend
 - [ ] Echte LLM-Anbindung (OpenAI GPT-4)

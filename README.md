@@ -122,4 +122,4 @@ Die Nutzung dieser Software erfolgt auf eigene Gefahr.
 
 ## 📄 Lizenz
 
-MIT License - siehe [[LICENSE](LICENSE) Datei](https://github.com/MeghanBao/statik-ai-agent-de/blob/main/License)
+MIT License - siehe [(LICENSE) Datei](https://github.com/MeghanBao/statik-ai-agent-de/blob/main/License)

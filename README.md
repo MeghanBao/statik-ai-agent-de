@@ -1,4 +1,4 @@
-# Statik AI Agent – Deutschland 🤖🇩🇪
+﻿# Statik AI Agent – Deutschland 🤖🇩🇪
 
 Ein intelligenter KI-Agent für den Statikbereich in Deutschland. Dieses Tool kombiniert klassische baustatische Berechnungen mit modernem Retrieval-Augmented Generation (RAG), um Ingenieuren und Architekten schnelle Orientierungswerte und normbasierte Erklärungen zu liefern.
 
@@ -7,47 +7,52 @@ Ein intelligenter KI-Agent für den Statikbereich in Deutschland. Dieses Tool ko
 ## ✨ Hauptfunktionen
 
 ### 🏗️ Statische Berechnung
-- Berechnung des maximalen Biegemoments (M) für Einfeldträger
-- Ermittlung der maximalen Durchbiegung (δ) unter Berücksichtigung von Materialsteifigkeit und Profilgeometrie
-- IPE-Profile und Materialien (Stahl, Beton, Holz, Aluminium)
+
+**Träger:**
+- Einfeldträger
+- Kragträger (einseitig eingespannt)
+- Durchlaufträger (2-3 Felder)
+
+**NEU - Rahmen:**
+- Eingeschossiger Rahmen mit Pultdach
+- Zweigeschossiger Rahmen
+
+**NEU - Platten:**
+- Einfeldplatte (allseitig gelagert)
+- Durchlaufplatte (2-4 Felder)
+- Bewehrungsberechnung
 
 ### 📊 Visualisierung
 - Biegemomentenverlauf-Diagramme
 - Biegelinien (Durchbiegungsverläufe)
 - Profil-Vergleichs-Charts
 
-### 📚 RAG-Dokumentensuche
-- Intelligente Suche in relevanten technischen Baubestimmungen
-- Kontextualisierung der Ergebnisse durch hinterlegte Referenzdokumente
+### 📚 RAG-Dokumentensuche (Erweitert!)
+- Intelligente Suche in 20+ deutschen Normen
+- DIN EN 1990, 1991, 1992, 1993, 1995
+- Kontextbasierte Antworten
 
 ### 🤖 KI-Interpretationen
-- Deutschsprachige Erklärungen der statischen Zusammenhänge
-- Bewertung der Ergebnisse im Hinblick auf Gebrauchstauglichkeitsgrenzwerte (z.B. L/300)
-- Neuer **KI-Assistent** mit freier Folgefrage direkt in der Ergebnisansicht
-- Optional mit **OpenAI** (`OPENAI_API_KEY`) oder lokalem Template-Fallback
+- Deutschsprachige Erklärungen
+- Bewertung der Ergebnisse
+- Optional mit **OpenAI** oder lokaler Fallback
 
 ## 🛠️ Technologie-Stack
 
-- **Frontend:** Streamlit – Für eine intuitive, webbasierte Benutzeroberfläche
-- **Berechnung:** NumPy – Effiziente mathematische Operationen
-- **Visualisierung:** Matplotlib – Diagramme und Charts
-- **RAG:** ChromaDB + Sentence Transformers – Dokumenten-Retrieval
-- **KI:** OpenAI API (optional) – Für erweiterte Erklärungen
+- **Frontend:** Streamlit
+- **Berechnung:** NumPy
+- **Visualisierung:** Matplotlib
+- **RAG:** ChromaDB + Sentence Transformers
+- **KI:** OpenAI API (optional)
 
 ## 🚀 Installation & Start
 
-### Voraussetzungen
-- Python 3.8 oder höher
-- pip
-
-### Schritt-für-Schritt
-
-```bash
+`ash
 # Repository klonen
 git clone https://github.com/MeghanBao/statik-ai-agent-de.git
 cd statik-ai-agent-de
 
-# Virtuelle Umgebung einrichten (empfohlen)
+# Virtuelle Umgebung
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # oder: venv\Scripts\activate  # Windows
@@ -57,60 +62,49 @@ pip install -r requirements.txt
 
 # Anwendung starten
 streamlit run app.py
-```
+`
 
-Die App ist unter `http://localhost:8501` erreichbar.
+Die App ist unter http://localhost:8501 erreichbar.
 
 ### Optional: OpenAI aktivieren
 
-Wenn du den KI-Assistenten mit OpenAI nutzen willst, setze einen API-Key:
-
-```bash
+`ash
 export OPENAI_API_KEY="dein_api_key"
-# optional: Modell überschreiben (Default: gpt-4o-mini)
-export OPENAI_MODEL="gpt-4o-mini"
 streamlit run app.py
-```
-
-Ohne API-Key nutzt die App automatisch eine lokale, template-basierte Erklärung.
-
-## 📋 Beispiel
-
-**Eingabewerte:**
-- Länge (L): 6.0 m
-- Last (w): 5.0 kN/m
-- E-Modul: 210.000 MPa (Stahl)
-- I-Moment (I): 8.33e-6 m⁴ (IPE 200)
-
-**Frage:** "Ist die Durchbiegung für einen Deckenbalken im Wohnungsbau akzeptabel?"
-
-**Ergebnis:**
-- Die App berechnet die Werte und liefert eine KI-gestützte Einordnung basierend auf der L/300 Regel für die Gebrauchstauglichkeit.
+`
 
 ## 📁 Projektstruktur
 
-```
+`
 statik-ai-agent-de/
 ├── app.py                 # Hauptanwendung (Streamlit UI)
-├── calculation.py         # Physikalische Berechnungslogik
+├── calculation.py         # Physikalische Berechnungen + Rahmen + Platten
 ├── visualization.py       # Diagramme und Charts
-├── rag_module.py          # Dokumenten-Retrieval (Vektorsuche)
-├── llm_module.py          # Sprachmodell-Schnittstelle
+├── rag_module.py          # Erweiterte Dokumenten-Retrieval
+├── llm_module.py         # Sprachmodell-Schnittstelle
+├── pdf_export.py         # PDF-Berichte
 └── requirements.txt       # Python-Abhängigkeiten
-```
+`
 
 ## 🗺️ Roadmap
 
-### ✅ Abgeschlossen (Today!)
+### ✅ Phase 3 Abgeschlossen
+
 - [x] PDF-Export für Kurzberichte
 - [x] Dynamische Diagramme (Streamlit Tabs)
 - [x] Mehr Trägertypen (Durchlaufträger, Kragträger)
 - [x] KI-Assistent mit optionaler OpenAI-Anbindung und Fallback
+- [x] **RAHMENBERECHNUNG** - Eingeschossig & Zweigeschossig
+- [x] **PLATTENBERECHNUNG** - Einfeld & Durchlauf mit Bewehrung
+- [x] **Erweiterte Normen-Bibliothek** - 20+ Normen (DIN EN 1990-1995)
+- [x] Neue Materialien - BSH, C35/45
 
-### ⏳ Kommend
-- [ ] Echte LLM-Anbindung (OpenAI GPT-4)
-- [ ] Vektordatenbank mit umfangreichen Normen-Bibliotheken
-- [ ] Weitere Trägertypen (Rahmen, Platten)
+### ⏳ Zukünftige Erweiterungen
+
+- 3D-Visualisierung
+- Weitere Rahmenformen (Giebel, Sattel)
+- Fundamentberechnungen
+- Erdbebennachweise
 
 ## ⚖️ Haftungsausschluss
 
@@ -122,4 +116,8 @@ Die Nutzung dieser Software erfolgt auf eigene Gefahr.
 
 ## 📄 Lizenz
 
-MIT License - siehe [(LICENSE) Datei](https://github.com/MeghanBao/statik-ai-agent-de/blob/main/License)
+MIT License
+
+---
+
+_Made with ❤️ by Dudubot_

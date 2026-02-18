@@ -146,5 +146,5 @@ Die Nutzung erfolgt auf eigene Verantwortung. Die Ergebnisse sind ausschließlic
 
 ## 📄 Lizenz
 
-[MIT License](LICENSE)
+[MIT License]([LICENSE](https://github.com/MeghanBao/statik-ai-agent-de/blob/main/License))
 

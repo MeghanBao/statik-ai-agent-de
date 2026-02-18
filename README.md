@@ -49,7 +49,7 @@ Ein intelligenter KI-Agent für den Statikbereich in Deutschland. Dieses Tool ko
 
 ## 🚀 Installation
 
-`ash
+`bash
 # Repository klonen
 git clone https://github.com/MeghanBao/statik-ai-agent-de.git
 cd statik-ai-agent-de
@@ -106,7 +106,7 @@ Nach jeder Berechnung kannst du dem KI-Assistenten Fragen stellen:
 
 ### OpenAI (optional)
 
-`ash
+`bash
 export OPENAI_API_KEY=sk-dein_api_key
 export OPENAI_MODEL=gpt-4o-mini
 streamlit run app.py
@@ -155,7 +155,3 @@ Die Nutzung erfolgt auf eigene Verantwortung:
 ## 📄 Lizenz
 
 MIT License
-
----
-
-_Made with ❤️ by Dudubot_
